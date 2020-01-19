@@ -38,7 +38,7 @@ namespace RESTFul.Api
                 options.SwaggerDoc("v1", new OpenApiInfo()
                 {
                     Version = "v1",
-                    Title = "RESTFull API - To test Component",
+                    Title = "RESTFul API - Example",
                     Description = "Swagger surface",
                     Contact = new OpenApiContact()
                     {
