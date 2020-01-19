@@ -1,7 +1,8 @@
 
 # RESTFul.API Example
 
-<img align="right" width="100px" src="https://brunobrito.ghost.io/content/images/2020/01/capa-redes-sociais-8.png" />
+<img width="300px" src="https://brunobrito.ghost.io/content/images/2020/01/capa-redes-sociais-8.png" />
+
 An ASP.NET Core API follwing good practices for a RESTFul api.
 
 
