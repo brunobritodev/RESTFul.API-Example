@@ -1,5 +1,4 @@
 ﻿using RESTFul.Api.Models;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace RESTFul.Api.Commands
@@ -12,17 +11,20 @@ namespace RESTFul.Api.Commands
         public string Gender { get; set; }
         [Required]
         public string Username { get; set; }
-        public DateTime? Birthday { get; set; }
+        public int Age { get; set; }
+
+        public string Country { get; set; }
 
         public User ToEntity()
         {
             return new User()
             {
-                Birthday = Birthday,
+                Age = Age,
                 FirstName = FirstName,
                 LastName = LastName,
                 Gender = Gender,
-                Username = Username
+                Username = Username,
+                Country = Country
             };
         }
     }

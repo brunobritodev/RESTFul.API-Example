@@ -1,6 +1,5 @@
-﻿using System;
+﻿using RESTFul.Api.Models;
 using System.ComponentModel.DataAnnotations;
-using RESTFul.Api.Models;
 
 namespace RESTFul.Api.Commands
 {
@@ -10,15 +9,16 @@ namespace RESTFul.Api.Commands
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Gender { get; set; }
-        public DateTime? Birthday { get; set; }
+        public int Age { get; set; }
+        public string Country { get; set; }
 
         public void Update(User actual)
         {
             actual.FirstName = FirstName;
             actual.LastName = LastName;
             actual.Gender = Gender;
-            actual.Birthday = Birthday;
-
+            actual.Age = Age;
+            actual.Country = Country;
         }
     }
 }

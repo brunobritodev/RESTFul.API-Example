@@ -8,13 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using RESTFul.Api.Contexts;
-using RESTFul.Api.Models;
 using RESTFul.Api.Notification;
 using RESTFul.Api.Service;
 using RESTFul.Api.Service.Interfaces;
-using RESTFul.Api.ViewModels;
 using System;
 using System.Reflection;
+using System.Text.Json;
 
 namespace RESTFul.Api
 {
@@ -30,7 +29,10 @@ namespace RESTFul.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase; ;
+            }); ;
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo()
@@ -54,10 +56,17 @@ namespace RESTFul.Api
 
             });
             services.AddMediatR(Assembly.GetExecutingAssembly());
+
+            services.AddEntityFrameworkInMemoryDatabase().AddDbContext<RestfulContext>(o => o.UseInMemoryDatabase("restful-api"));
+            services.AddLogging();
+            services.AddAutoMapper(typeof(Startup));
+            RegisterServices(services);
+        }
+
+        private static void RegisterServices(IServiceCollection services)
+        {
             services.AddTransient<IDomainNotificationMediatorService, DomainNotificationMediatorService>();
             services.AddTransient<IDummyUserService, DummyUserService>();
-            services.AddEntityFrameworkInMemoryDatabase().AddDbContext<RestfulContext>(options => options.UseInMemoryDatabase("restful"));
-            services.AddAutoMapper(typeof(Startup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -67,6 +76,7 @@ namespace RESTFul.Api
             {
                 app.UseDeveloperExceptionPage();
             }
+
 
             app.UseHttpsRedirection();
 
@@ -89,12 +99,4 @@ namespace RESTFul.Api
         }
     }
 
-    public class BloggerDtosProfile : AutoMapper.Profile
-    {
-        public BloggerDtosProfile()
-        {
-            CreateMap<User, UserViewModel>();
-            // Add other CreateMap’s for any other configs
-        }
-    }
 }

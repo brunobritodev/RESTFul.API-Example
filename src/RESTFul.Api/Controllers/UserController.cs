@@ -1,4 +1,4 @@
-﻿using AspNetCore.RESTFul.Extensions;
+﻿using AspNetCore.IQueryable.Extensions;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
@@ -91,17 +91,25 @@ namespace RESTFul.Api.Controllers
 
 
         [HttpDelete("{username}")]
-        public ActionResult<User> Delete(string username)
+        public async Task<ActionResult<User>> Delete(string username)
         {
-            if (!ModelState.IsValid)
+            var actual = await _dummyUserService.Find(username);
+            if (actual == null)
             {
-                NotifyModelStateErrors();
-                return ModelStateErrorResponseError();
+                return BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]>() { { "username", new[] { "User not found" } } }));
             }
 
-            _dummyUserService.Remove(username);
+            await _dummyUserService.Remove(username);
             return ResponseDelete();
         }
 
+
+        [HttpGet("{username}/claims")]
+        public async Task<ActionResult<List<UserViewModel>>> GetClaims([FromQuery] UserSearch search)
+        {
+            var result = _dummyUserService.Query().Apply(search);
+
+            return ResponseGet(await _mapper.ProjectTo<UserViewModel>(result).ToListAsync());
+        }
     }
 }

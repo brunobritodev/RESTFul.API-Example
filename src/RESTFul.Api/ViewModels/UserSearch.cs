@@ -1,20 +1,22 @@
-﻿using AspNetCore.RESTFul.Extensions.Attributes;
-using AspNetCore.RESTFul.Extensions.Filter;
-using AspNetCore.RESTFul.Extensions.Pagination;
-using AspNetCore.RESTFul.Extensions.Sort;
-using System;
+﻿using AspNetCore.IQueryable.Extensions.Attributes;
+using AspNetCore.IQueryable.Extensions.Filter;
+using AspNetCore.IQueryable.Extensions.Pagination;
+using AspNetCore.IQueryable.Extensions.Sort;
+using Microsoft.AspNetCore.Mvc;
 
 namespace RESTFul.Api.ViewModels
 {
     public class UserSearch : IRestSort, IRestPagination
     {
-        public string Username { get; set; }
 
-        [Rest(Operator = WhereOperator.GreaterThan)]
-        public DateTime? Birthday { get; set; }
+        [FromQuery(Name = "lives_in")]
+        public string Country { get; set; }
 
-        [Rest(Operator = WhereOperator.Contains, HasName = "Firstname")]
-        public string Name { get; set; }
+        [FromQuery(Name = "older_than"), Rest(Operator = WhereOperator.GreaterThanOrEqualTo, HasName = "Age")]
+        public int OlderThan { get; set; }
+
+        [FromQuery(Name = "younger_than"), Rest(Operator = WhereOperator.LessThanOrEqualTo, HasName = "Age")]
+        public int YoungerThan { get; set; }
 
         public int Offset { get; set; }
         public int Limit { get; set; } = 10;

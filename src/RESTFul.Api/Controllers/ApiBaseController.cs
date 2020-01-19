@@ -74,7 +74,7 @@ namespace RESTFul.Api.Controllers
         protected ActionResult<IEnumerable<T>> ResponseGet<T>(IEnumerable<T> result)
         {
 
-            if (result == null || (result != null && !result.Any()))
+            if (result == null || !result.Any())
                 return NoContent();
 
             return Ok(result);

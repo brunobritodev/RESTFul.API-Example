@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Polyjuice.Potions;
+﻿using Bogus;
+using Bogus.DataSets;
+using Microsoft.EntityFrameworkCore;
 using RESTFul.Api.Commands;
 using RESTFul.Api.Contexts;
 using RESTFul.Api.Models;
@@ -18,25 +19,28 @@ namespace RESTFul.Api.Service
         private readonly IDomainNotificationMediatorService _domainNotification;
         private readonly RestfulContext _context;
         private static Random _rnd = new Random();
+        private readonly Faker _faker;
 
         public DummyUserService(IDomainNotificationMediatorService domainNotification,
             RestfulContext context)
         {
             _domainNotification = domainNotification;
             _context = context;
+            _faker = new Faker();
         }
         private async Task CheckUsers()
         {
             if (_context.Users.Any())
                 return;
-            var users = Range(1, 10).Select(index => new User
+            var users = Range(1, 500).Select(index => new User
             {
-                FirstName = Name.FirstName,
-                LastName = Name.LastName,
-                Username = Internet.Email(Name.FirstName),
-                Gender = Gender.Random,
-                Birthday = DateAndTime.Birthday,
+                FirstName = _faker.Person.FirstName,
+                LastName = _faker.Person.LastName,
+                Username = _faker.Internet.Email(),
+                Gender = _faker.PickRandom<Name.Gender>().ToString(),
+                Age = _faker.Random.Int(18, 60),
                 Active = true,
+                Country = _faker.Address.Country(),
                 Claims = GenerateClaims(index + 1)
             }).ToList();
 
@@ -50,7 +54,7 @@ namespace RESTFul.Api.Service
 
         private IEnumerable<Claim> GenerateClaims(int userId)
         {
-            return Range(1, _rnd.Next(1, 7)).Select(i => new Claim(Job.Title, Lorem.Paragraph(), userId)).ToList();
+            return Range(1, _rnd.Next(1, 7)).Select(i => new Claim(_faker.Company.CompanyName(), _faker.Lorem.Paragraph(), userId)).ToList();
         }
 
         public IQueryable<User> Query()
