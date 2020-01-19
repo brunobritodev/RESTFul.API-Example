@@ -16,4 +16,4 @@ Pre reqs
 2. Open Project
 3. Build and Run
 
-More about on [ASP.NET Core 3.1 com IdentityServer4](https://www.brunobrito.net.br/aspnet-core-api-restful) - Portuguese only
+More about on [ASP.NET Core - API RESTFul](https://www.brunobrito.net.br/aspnet-core-api-restful) - Portuguese only
