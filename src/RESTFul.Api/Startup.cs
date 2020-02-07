@@ -49,7 +49,7 @@ namespace RESTFul.Api
                     License = new OpenApiLicense()
                     {
                         Name = "MIT",
-                        Url = new Uri("https://github.com/brunohbrito/AspNet.Core.RESTFull.Extensions/blob/master/LICENSE")
+                        Url = new Uri("https://github.com/brunohbrito/RESTFul.API-Example/blob/master/LICENSE")
                     },
 
                 });
