@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNetCore.RESTFul.Extensions" Version="3.1.1" />
+    <PackageReference Include="AspNetCore.IQueryable.Extensions" Version="3.1.2" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="Bogus" Version="28.4.4" />
     <PackageReference Include="MediatR" Version="8.0.0" />
