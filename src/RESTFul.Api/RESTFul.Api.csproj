@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNetCore.IQueryable.Extensions" Version="3.1.7" />
-    <PackageReference Include="Hellang.Middleware.ProblemDetails" Version="5.0.0" />
+    <PackageReference Include="AspNetCore.IQueryable.Extensions" Version="3.1.8" />
+    <PackageReference Include="Hellang.Middleware.ProblemDetails" Version="5.1.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="Bogus" Version="31.0.2" />
     <PackageReference Include="Bogus.Tools.Analyzer" Version="31.0.2">

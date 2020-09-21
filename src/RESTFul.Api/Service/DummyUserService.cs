@@ -60,8 +60,7 @@ namespace RESTFul.Api.Service
                 return;
 
             var actua = await Find(applicant.Username);
-            _context.Applicants.Remove(actua);
-            await _context.Applicants.AddAsync(applicant);
+            _context.Applicants.Update(actua);
 
             await _context.SaveChangesAsync();
         }

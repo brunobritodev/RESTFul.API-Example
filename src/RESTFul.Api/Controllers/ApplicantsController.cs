@@ -1,4 +1,5 @@
 ﻿using AspNetCore.IQueryable.Extensions;
+using AspNetCore.IQueryable.Extensions.Filter;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
@@ -48,10 +49,11 @@ namespace RESTFul.Api.Controllers
         /// Get all olders applicants, which is actually declined.
         /// </summary>
         /// <returns>List of <see cref="Applicant"/></returns>
-        [HttpGet("olders-declined")]
-        public async Task<ActionResult<List<ApplicantViewModel>>> Get()
+        [HttpGet("youngers-from-brazil")]
+        public async Task<ActionResult<List<ApplicantViewModel>>> GetYoungersFromBrazil()
         {
-            var search = new ApplicantSearch() { OlderThan = 50, Status = Status.Declined };
+            var search = new ApplicantSearch() { OlderThan = 25, Country = "Brazil"};
+            var expression = _dummyUserService.Query().FilterExpression(search);
             var result = _dummyUserService.Query().Apply(search);
 
             return ResponseGet(await _mapper.ProjectTo<ApplicantViewModel>(result).ToListAsync());
@@ -63,7 +65,7 @@ namespace RESTFul.Api.Controllers
         /// <param name="username">username of Applicant</param>
         /// <returns><see cref="Applicant"/></returns>
         [HttpGet("{username}")]
-        public async Task<ActionResult<Applicant>> Get(string username)
+        public async Task<ActionResult<Applicant>> GetByUsername(string username)
         {
             return ResponseGet(await _dummyUserService.Find(username).ConfigureAwait(false));
         }
@@ -84,7 +86,7 @@ namespace RESTFul.Api.Controllers
 
             await _dummyUserService.Save(command).ConfigureAwait(false);
             var newUser = await _dummyUserService.Find(command.Username).ConfigureAwait(false);
-            return ResponsePost(nameof(Get), new { id = command.Username }, newUser);
+            return ResponsePost(nameof(GetByUsername), new { username = command.Username }, newUser);
         }
 
         /// <summary>
