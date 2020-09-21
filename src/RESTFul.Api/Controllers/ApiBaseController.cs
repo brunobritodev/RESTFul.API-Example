@@ -36,11 +36,14 @@ namespace RESTFul.Api.Controllers
             return BadRequest(new ValidationProblemDetails(_notifications.GetNotificationsByKey()));
         }
 
-        protected ActionResult ResponseDelete()
+        protected ActionResult<T> ResponseDelete<T>(T item)
         {
             if (IsValidOperation())
             {
-                return NoContent();
+                if (item == null)
+                    return NoContent();
+
+                return Ok(item);
             }
 
             return BadRequest(new ValidationProblemDetails(_notifications.GetNotificationsByKey()));

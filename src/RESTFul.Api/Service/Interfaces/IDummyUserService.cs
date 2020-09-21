@@ -8,11 +8,14 @@ namespace RESTFul.Api.Service.Interfaces
 {
     public interface IDummyUserService
     {
-        IQueryable<User> Query();
-        Task<IEnumerable<User>> All();
-        Task<User> Find(string id);
-        Task Save(RegisterUserCommand command);
-        Task Update(User actualUser);
-        Task<int> Remove(string username);
+        IQueryable<Applicant> Query();
+        Task<IEnumerable<Applicant>> All();
+        Task<Applicant> Find(string id);
+        Task Save(RegisterApplicantCommand command);
+        Task Update(Applicant actualApplicant);
+        Task<Applicant> Remove(string username);
+        Task Approve(string username);
+        Task Decline(string username);
+        Task<Applicant> Transfer(TransferApplicantCommand command);
     }
 }

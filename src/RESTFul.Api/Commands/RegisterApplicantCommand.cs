@@ -3,8 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RESTFul.Api.Commands
 {
-    public class RegisterUserCommand
+    public class RegisterApplicantCommand
     {
+        [Required]
+        public int CompanyId { get; set; }
         [Required]
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -15,11 +17,12 @@ namespace RESTFul.Api.Commands
 
         public string Country { get; set; }
 
-        public User ToEntity()
+        public Applicant ToEntity()
         {
-            return new User()
+            return new Applicant()
             {
                 Age = Age,
+                CompanyId = CompanyId,
                 FirstName = FirstName,
                 LastName = LastName,
                 Gender = Gender,

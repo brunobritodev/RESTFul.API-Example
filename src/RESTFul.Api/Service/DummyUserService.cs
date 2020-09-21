@@ -1,16 +1,12 @@
-﻿using Bogus;
-using Bogus.DataSets;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using RESTFul.Api.Commands;
 using RESTFul.Api.Contexts;
 using RESTFul.Api.Models;
 using RESTFul.Api.Notification;
 using RESTFul.Api.Service.Interfaces;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static System.Linq.Enumerable;
 
 namespace RESTFul.Api.Service
 {
@@ -18,115 +14,170 @@ namespace RESTFul.Api.Service
     {
         private readonly IDomainNotificationMediatorService _domainNotification;
         private readonly RestfulContext _context;
-        private static Random _rnd = new Random();
-        private readonly Faker _faker;
 
         public DummyUserService(IDomainNotificationMediatorService domainNotification,
             RestfulContext context)
         {
             _domainNotification = domainNotification;
             _context = context;
-            _faker = new Faker();
         }
-        private async Task CheckUsers()
+        private async Task CheckApplicants()
         {
-            if (_context.Users.Any())
+            if (_context.Applicants.Any())
                 return;
-            var users = Range(1, 500).Select(index => new User
-            {
-                FirstName = _faker.Person.FirstName,
-                LastName = _faker.Person.LastName,
-                Username = _faker.Internet.Email(),
-                Gender = _faker.PickRandom<Name.Gender>().ToString(),
-                Age = _faker.Random.Int(18, 60),
-                Active = true,
-                Country = _faker.Address.Country(),
-                Claims = GenerateClaims(index + 1)
-            }).ToList();
 
-            foreach (var user in users)
-            {
-                await _context.Users.AddAsync(user);
-            }
+            var companies = Company.Get(250).Generate(2);
 
-            await _context.SaveChangesAsync().ConfigureAwait(false);
+            await _context.Companies.AddRangeAsync(companies);
+            await _context.SaveChangesAsync();
         }
 
-        private IEnumerable<Claim> GenerateClaims(int userId)
+        public IQueryable<Applicant> Query()
         {
-            return Range(1, _rnd.Next(1, 7)).Select(i => new Claim(_faker.Company.CompanyName(), _faker.Lorem.Paragraph(), userId)).ToList();
+            CheckApplicants().Wait();
+            return _context.Applicants.AsQueryable();
         }
 
-        public IQueryable<User> Query()
+        public async Task<IEnumerable<Applicant>> All()
         {
-            CheckUsers().Wait();
-            return _context.Users.AsQueryable();
+            await CheckApplicants();
+            return await _context.Applicants.ToListAsync();
         }
 
-        public async Task<IEnumerable<User>> All()
-        {
-            await CheckUsers().ConfigureAwait(false);
-            return await _context.Users.ToListAsync().ConfigureAwait(false);
-        }
-
-        public async Task Save(RegisterUserCommand command)
+        public async Task Save(RegisterApplicantCommand command)
         {
             var user = command.ToEntity();
-            if (CheckIfUserIsValid(user))
+            if ((await CheckIfUserIsValid(user)))
                 return;
 
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync().ConfigureAwait(false);
+            await _context.Applicants.AddAsync(user);
+            await _context.SaveChangesAsync();
         }
 
-        public async Task Update(User user)
+        public async Task Update(Applicant applicant)
         {
-            if (CheckIfUserIsValid(user))
+            if ((await CheckIfUserIsValid(applicant)))
                 return;
 
-            var actua = await Find(user.Username).ConfigureAwait(false);
-            _context.Users.Remove(actua);
-            await _context.Users.AddAsync(user);
+            var actua = await Find(applicant.Username);
+            _context.Applicants.Remove(actua);
+            await _context.Applicants.AddAsync(applicant);
 
-            await _context.SaveChangesAsync().ConfigureAwait(false);
+            await _context.SaveChangesAsync();
         }
 
-        public async Task<int> Remove(string username)
+        public async Task<Applicant> Remove(string username)
         {
-            var actual = await Find(username).ConfigureAwait(false);
+            var actual = await Find(username);
             if (actual != null)
-                _context.Users.Remove(actual);
-            return await _context.SaveChangesAsync().ConfigureAwait(false);
+            {
+                actual.Delete();
+                _context.Applicants.Update(actual);
+            }
+            else
+            {
+                _domainNotification.Notify(new DomainNotification("Applicant", "Not found"));
+            }
+            await _context.SaveChangesAsync();
+            return actual;
+        }
+
+        public async Task Approve(string username)
+        {
+            var applicant = await Find(username);
+            if (applicant == null)
+            {
+                _domainNotification.Notify(new DomainNotification("Applicant", "Not found"));
+                return;
+            }
+
+            applicant.Approve();
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task Decline(string username)
+        {
+            var applicant = await Find(username);
+            if (applicant == null)
+            {
+                _domainNotification.Notify(new DomainNotification("Applicant", "Not found"));
+                return;
+            }
+
+            applicant.Decline();
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Applicant> Transfer(TransferApplicantCommand command)
+        {
+            var applicant = await Find(command.Username);
+            if (applicant == null)
+            {
+                _domainNotification.Notify(new DomainNotification("Applicant", "Not found"));
+                return null;
+            }
+            if (command.Company == applicant.CompanyId)
+            {
+                _domainNotification.Notify(new DomainNotification("Applicant", "Can't transfer for same company"));
+                return null;
+            }
+            if (command.Company <= 0)
+            {
+                _domainNotification.Notify(new DomainNotification("Applicant", "Invalid company"));
+                return null;
+            }
+
+            applicant.Delete();
+            var newApplicant = new Applicant(applicant, command.Company);
+            await _context.AddAsync(newApplicant);
+            await _context.SaveChangesAsync();
+            return newApplicant;
         }
 
 
-        private bool CheckIfUserIsValid(User command)
+        private async Task<bool> CheckIfUserIsValid(Applicant command)
         {
             var valid = true;
             if (string.IsNullOrEmpty(command.FirstName))
             {
-                _domainNotification.Notify(new DomainNotification("User", "Invalid firstname"));
+                _domainNotification.Notify(new DomainNotification("Applicant", "Invalid firstname"));
                 valid = false;
             }
 
             if (string.IsNullOrEmpty(command.LastName))
             {
-                _domainNotification.Notify(new DomainNotification("User", "Invalid firstname"));
+                _domainNotification.Notify(new DomainNotification("Applicant", "Invalid firstname"));
                 valid = false;
             }
 
-            if (Find(command.Username) != null)
+            if (command.CompanyId <= 0)
             {
-                _domainNotification.Notify(new DomainNotification("User", "Username already exists"));
+                _domainNotification.Notify(new DomainNotification("Applicant", "Invalid company"));
+                valid = false;
+            }
+            if ((await FindCompany(command.CompanyId)) != null)
+            {
+                _domainNotification.Notify(new DomainNotification("Applicant", "Username already exists"));
+                valid = false;
+            }
+
+            if ((await Find(command.Username)) != null)
+            {
+                _domainNotification.Notify(new DomainNotification("Applicant", "Username already exists"));
                 valid = false;
             }
 
             return valid;
         }
 
-        public Task<User> Find(string username)
+        private Task<Company> FindCompany(int companyId)
         {
-            return _context.Users.FirstOrDefaultAsync(f => f.Username == username);
+            return _context.Companies.FirstOrDefaultAsync(f => f.Id == companyId);
+        }
+
+        public Task<Applicant> Find(string username)
+        {
+            return _context.Applicants.Include(i => i.Company).FirstOrDefaultAsync(f => f.Username == username);
 
         }
     }

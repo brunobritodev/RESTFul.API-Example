@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RESTFul.Api.Commands
 {
-    public class UpdateUserCommand
+    public class UpdateApplicantCommand
     {
         [Required]
         public string FirstName { get; set; }
@@ -12,7 +12,7 @@ namespace RESTFul.Api.Commands
         public int Age { get; set; }
         public string Country { get; set; }
 
-        public void Update(User actual)
+        public void Update(Applicant actual)
         {
             actual.FirstName = FirstName;
             actual.LastName = LastName;
@@ -21,4 +21,11 @@ namespace RESTFul.Api.Commands
             actual.Country = Country;
         }
     }
+
+    public class TransferApplicantCommand
+    {
+        public string Username { get; set; }
+        public int Company { get; set; }
+    }
+
 }

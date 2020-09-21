@@ -1,4 +1,5 @@
 using AutoMapper;
+using Hellang.Middleware.ProblemDetails;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +13,7 @@ using RESTFul.Api.Notification;
 using RESTFul.Api.Service;
 using RESTFul.Api.Service.Interfaces;
 using System;
+using System.IO;
 using System.Reflection;
 using System.Text.Json;
 
@@ -19,8 +21,11 @@ namespace RESTFul.Api
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly IWebHostEnvironment _environment;
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
+            _environment = environment;
             Configuration = configuration;
         }
 
@@ -29,10 +34,12 @@ namespace RESTFul.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddJsonOptions(options =>
+            services.AddControllers().AddJsonOptions(o =>
             {
-                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase; ;
-            }); ;
+                o.JsonSerializerOptions.IgnoreNullValues = true;
+            });
+
+            services.AddProblemDetails(options => options.IncludeExceptionDetails = (context, exception) => _environment.IsDevelopment());
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo()
@@ -53,6 +60,10 @@ namespace RESTFul.Api
                     },
 
                 });
+                // Set the comments path for the Swagger JSON and UI.
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                options.IncludeXmlComments(xmlPath);
 
             });
             services.AddMediatR(Assembly.GetExecutingAssembly());
