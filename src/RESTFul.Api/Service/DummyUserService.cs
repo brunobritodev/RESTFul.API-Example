@@ -47,7 +47,7 @@ namespace RESTFul.Api.Service
         public async Task Save(RegisterApplicantCommand command)
         {
             var user = command.ToEntity();
-            if ((await CheckIfUserIsValid(user)))
+            if (!(await CheckIfUserIsValid(user)))
                 return;
 
             await _context.Applicants.AddAsync(user);
@@ -56,7 +56,7 @@ namespace RESTFul.Api.Service
 
         public async Task Update(Applicant applicant)
         {
-            if ((await CheckIfUserIsValid(applicant)))
+            if (!(await CheckIfUserIsValidToUpdate(applicant)))
                 return;
 
             var actua = await Find(applicant.Username);
@@ -133,6 +133,40 @@ namespace RESTFul.Api.Service
             return newApplicant;
         }
 
+        private async Task<bool> CheckIfUserIsValidToUpdate(Applicant command)
+        {
+            var valid = true;
+            if (string.IsNullOrEmpty(command.FirstName))
+            {
+                _domainNotification.Notify(new DomainNotification("Applicant", "Invalid firstname"));
+                valid = false;
+            }
+
+            if (string.IsNullOrEmpty(command.LastName))
+            {
+                _domainNotification.Notify(new DomainNotification("Applicant", "Invalid firstname"));
+                valid = false;
+            }
+
+            if (command.CompanyId <= 0)
+            {
+                _domainNotification.Notify(new DomainNotification("Applicant", "Invalid company"));
+                valid = false;
+            }
+            if ((await FindCompany(command.CompanyId)) == null)
+            {
+                _domainNotification.Notify(new DomainNotification("Applicant", "Company not found"));
+                valid = false;
+            }
+
+            if ((await Find(command.Username)) == null)
+            {
+                _domainNotification.Notify(new DomainNotification("Applicant", "User not found"));
+                valid = false;
+            }
+
+            return valid;
+        }
 
         private async Task<bool> CheckIfUserIsValid(Applicant command)
         {
@@ -154,9 +188,9 @@ namespace RESTFul.Api.Service
                 _domainNotification.Notify(new DomainNotification("Applicant", "Invalid company"));
                 valid = false;
             }
-            if ((await FindCompany(command.CompanyId)) != null)
+            if ((await FindCompany(command.CompanyId)) == null)
             {
-                _domainNotification.Notify(new DomainNotification("Applicant", "Username already exists"));
+                _domainNotification.Notify(new DomainNotification("Applicant", "Company not found"));
                 valid = false;
             }
 

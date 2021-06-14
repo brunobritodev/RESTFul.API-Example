@@ -16,6 +16,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace RESTFul.Api
 {
@@ -34,10 +35,8 @@ namespace RESTFul.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddJsonOptions(o =>
-            {
-                o.JsonSerializerOptions.IgnoreNullValues = true;
-            });
+            services.AddControllers()
+                .AddNewtonsoftJson(o => o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 
             services.AddProblemDetails(options => options.IncludeExceptionDetails = (context, exception) => _environment.IsDevelopment());
             services.AddSwaggerGen(options =>
@@ -76,8 +75,9 @@ namespace RESTFul.Api
 
         private static void RegisterServices(IServiceCollection services)
         {
-            services.AddTransient<IDomainNotificationMediatorService, DomainNotificationMediatorService>();
-            services.AddTransient<IDummyUserService, DummyUserService>();
+            services.AddScoped<IDomainNotificationMediatorService, DomainNotificationMediatorService>();
+            services.AddScoped<IDummyUserService, DummyUserService>();
+            services.AddScoped<INotificationHandler<DomainNotification>, DomainNotificationHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
