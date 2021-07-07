@@ -213,5 +213,20 @@ namespace RESTFul.Api.Service
             return _context.Applicants.Include(i => i.Company).FirstOrDefaultAsync(f => f.Username == username);
 
         }
+        public Task<Company> FindCompany(string company)
+        {
+            return _context.Companies.FirstOrDefaultAsync(f => f.Name.Equals(company));
+        }
+        public Task<List<Company>> GetCompanies()
+        {
+            CheckApplicants().Wait();
+            return _context.Companies.ToListAsync();
+        }
+
+        public async Task<ICollection<Applicant>> GetCompanyUsers(string company)
+        {
+            var companyDb = await _context.Companies.Include(i => i.Applicants).FirstOrDefaultAsync(f => f.Uniquename.Equals(company));
+            return companyDb.Applicants;
+        }
     }
 }

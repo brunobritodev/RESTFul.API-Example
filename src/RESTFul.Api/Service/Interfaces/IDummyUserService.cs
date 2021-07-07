@@ -17,5 +17,9 @@ namespace RESTFul.Api.Service.Interfaces
         Task Approve(string username);
         Task Decline(string username);
         Task<Applicant> Transfer(TransferApplicantCommand command);
+
+        Task<List<Company>> GetCompanies();
+        Task<Company> FindCompany(string company);
+        Task<ICollection<Applicant>> GetCompanyUsers(string company);
     }
 }

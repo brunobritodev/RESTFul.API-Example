@@ -140,6 +140,11 @@ namespace RESTFul.Api.Controllers
             return ResponseDelete(await _dummyUserService.Remove(username));
         }
 
+        /// <summary>
+        /// Approve an aplicant. He/She will be hired.
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
         [HttpPut("{username}/approve")]
         public async Task<ActionResult<Applicant>> Approve(string username)
         {
@@ -148,6 +153,9 @@ namespace RESTFul.Api.Controllers
             return ResponsePutPatch();
         }
 
+        /// <summary>
+        /// Decline the applicant
+        /// </summary>
         [HttpPut("{username}/decline")]
         public async Task<ActionResult<Applicant>> Decline(string username)
         {
@@ -156,6 +164,9 @@ namespace RESTFul.Api.Controllers
             return ResponsePutPatch();
         }
 
+        /// <summary>
+        /// Transfer the applicant to another company
+        /// </summary>
         [HttpPost("{username}/transfer/{company}")]
         public async Task<ActionResult<Applicant>> Transfer([FromBody] TransferApplicantCommand model)
         {
